@@ -19,12 +19,12 @@ const NO_NEWLINES = [TRACES.action, TRACES.actionInput];
 
 /* 
 
-Parses text between ReAct tokens
+Parses text between ReAct Traces
 Generated with gpt-4 using the prompt:
 
-For these tokens: 
+For these traces: 
 
-const ReActTokens = {
+const TRACES = {
   answer: "Final Answer:",
   observation: "Observation:",
   thought: "Thought:",
