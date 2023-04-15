@@ -1,0 +1,17 @@
+{
+  "name": "curro",
+  "version": "0.1.0",
+  "description": "Composable Typscript library for writing Agents with OpenAI's GPT-4 API",
+  "main": "src/index.ts",
+  "repository": "git@github.com:nc/curro.git",
+  "author": "Namit Chadha <namit.chadha@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "node-fetch": "^3.3.1",
+    "openai": "^3.2.1"
+  },
+  "devDependencies": {
+    "@types/node": "^18.15.11",
+    "dotenv": "^16.0.3"
+  }
+}
