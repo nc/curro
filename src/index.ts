@@ -106,6 +106,27 @@ const TOOLS = {
       return result ? eval(result) : "I don't know.";
     },
   },
+  FindAPI: {
+    name: "FindAPI",
+    description: "Find the API for a given function",
+    fn: async (input: string) => {
+      console.log("Finding API for", input);
+      const { response } = await prompt(
+        `You are a helpful assistant that writes JS code, do not output anything other than the code itself. No explanation. Just the code so it can be executed instantly. Write a JS function to return the API for: ${input}\n And call the function at the end of the code.`
+      );
+      const result = response.data.choices[0]?.message.content;
+      console.debug(`\nExecuting:\n\n\t${result.split("\n").join("\n\t")}`);
+      return result ? eval(result) : "I don't know.";
+    },
+  },
+  AskForHelp: {
+    name: "AskForHelp",
+    description: "Ask for help from a human",
+    fn: async (input: string) => {
+      console.log("HELP!!!", input);
+      return "I don't know.";
+    },
+  },
 };
 
 async function prompt(prompt: string) {
@@ -232,7 +253,7 @@ async function agent(
 }
 
 async function run() {
-  const answer = await agent(TOOLS, "What is tomorrows date?", "", 0, (token) =>
+  const answer = await agent(TOOLS, process.argv[2], "", 0, (token) =>
     process.stdout.write(token.toString())
   );
   console.log(`\n\nFinal Answer: ${answer}`);
