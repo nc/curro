@@ -221,7 +221,7 @@ async function agent(
         const observationPrompt = `\nObservation: ${observation}\n`;
         onToken(observationPrompt);
         const prior = `${output}${observationPrompt}`;
-        return await agent(tools, prompt, prior, depth + 1, onToken);
+        return await agent(tools, prompt, prior, depth++, onToken);
       } catch (error) {
         console.error(`Error with ${tool.name}.\n${error}`);
       }
