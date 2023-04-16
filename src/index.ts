@@ -2,6 +2,7 @@ import * as dotenv from "dotenv";
 import { IncomingMessage } from "http";
 dotenv.config({ path: ".env.local", override: true });
 import { Configuration, OpenAIApi } from "openai";
+import htmlParser from "node-html-parser";
 const configuration = new Configuration({
   apiKey: process.env.OPENAI_API_KEY,
 });
@@ -32,7 +33,8 @@ const TRACES = {
   actionInput: "Action Input:",
 };
 
-Write a JS regexp that can extract the text inbetween each sequential pair of tokens. The text can include newlines except Action and Action Input which are always separated by one newline.
+Write a JS regexp that can extract the text inbetween each sequential pair of tokens. 
+The text can include newlines except Action and Action Input which are always separated by one newline.
 
 */
 const PARSER_REGEXP = new RegExp(
@@ -91,7 +93,9 @@ const TOOLS = {
       const response = await fetch(
         `https://www.google.com/search?q=${encodeURIComponent(input)}`
       );
-      return await response.text();
+      const html = await response.text();
+      const text = htmlParser.parse(html).innerText;
+      return text;
     },
   },
   Compute: {
@@ -124,6 +128,14 @@ const TOOLS = {
     description: "Ask for help from a human",
     fn: async (input: string) => {
       console.log("HELP!!!", input);
+      return "I don't know.";
+    },
+  },
+  WaitForConfirmation: {
+    name: "WaitForConfirmation",
+    description: "Wait for confirmation from a human for destructive actions",
+    fn: async (input: string) => {
+      console.log("Waiting for confirmation", input);
       return "I don't know.";
     },
   },
