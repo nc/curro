@@ -1,1 +1,1 @@
-Curro lets you compose GPT calls with a functional Typescript interface.
+Plain TS functions to implement the ReAct.
