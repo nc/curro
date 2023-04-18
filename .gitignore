@@ -1,2 +1,4 @@
 node_modules
 .env.local
+.dev.vars
+api/.dev.vars

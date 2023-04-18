@@ -8,7 +8,7 @@ export function useAgent() {
   const storeRef = useRef(proxy({}));
 
   useEffect(() => {
-    const ws = new WebSocket('ws://localhost:57715');
+    const ws = new WebSocket('ws://localhost:8787');
     // Now you can send and receive messages like before.
     // ws.send('hello');
     ws.addEventListener('message', (event) => {

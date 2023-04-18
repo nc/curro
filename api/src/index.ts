@@ -40,6 +40,7 @@ export default {
     // executes a remote eval in the clients browser
     // and returns the result to the worker
     async function remoteEvalFn(code: string): Promise<RemoveEvalResult> {
+      console.debug("[exec]", code);
       const id = nanoid();
       let resolved = false;
       return new Promise((resolve, reject) => {
@@ -57,7 +58,7 @@ export default {
               if (response.status === "error") {
                 reject(response.error);
               } else {
-                console.log("exec: ", response.result);
+                console.log("[exec result]", response.result);
                 resolve(response);
               }
               resolve(response);
@@ -68,24 +69,31 @@ export default {
     }
 
     function handleMessage(event: MessageEvent) {
+      console.debug("[message]", event.data);
       if (typeof event.data === "string") {
         const message: Message = JSON.parse(event.data);
         if (message.type === "question") {
+          console.debug("[question]", message.question);
           agent(env, remoteEvalFn, TOOLS, message.question, "", 0, (token) => {
+            console.debug("[token]", token);
             worker.send(JSON.stringify({ type: "token", token }));
-          }).then((answer) => {
-            worker.send(JSON.stringify({ type: "answer", answer }));
-          });
+          })
+            .then((answer) => {
+              console.debug("[answer]", answer);
+              worker.send(JSON.stringify({ type: "answer", answer }));
+            })
+            .catch(console.error);
         } else if (message.type === "eval") {
           // no-op
         } else {
-          console.log("unsupported message type", message);
+          console.error("[error] unsupported message type", message);
         }
       }
     }
 
     worker.addEventListener("message", handleMessage);
     worker.addEventListener("close", () => {
+      console.debug("[close]");
       worker.removeEventListener("message", handleMessage);
     });
 

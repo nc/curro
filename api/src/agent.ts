@@ -156,6 +156,7 @@ async function prompt(env: Env, prompt: string) {
 }
 
 async function chat(env: Env, prompt: string, stop?: string | string[]) {
+  console.debug("[chatting]", prompt, stop);
   const controller = new AbortController();
   const response = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
@@ -233,77 +234,85 @@ export async function agent(
   onToken: (token: string) => void = () => {}
 ): Promise<string | void> {
   if (depth > 5) {
+    console.error("Depth limit reached, aborting.");
     throw new Error("Depth limit reached, aborting.");
   }
 
-  const { response, controller } = await chat(
-    env,
-    ReActTemplate(Object.values(tools), prompt, scratchpad),
-    [`\n${TRACES.observation}`]
-  );
-  if (response.body == null) {
-    throw new Error("No response body");
-  }
-
-  const reader = response.body.getReader();
-
-  let output = `${scratchpad}`;
-
-  for await (const token of tokenize(read(reader))) {
-    output += token;
-    onToken(token);
-  }
-
-  let memory: { [key: string]: string } = {};
-
-  if (depth === 0) {
-    onToken(`${TRACES.thought} `);
-  }
-
-  let result;
-  while ((result = PARSER_REGEXP.exec(output))) {
-    const trace = result[1];
-    // action and action input are always separated by one newline
-    const content = NO_NEWLINES.includes(trace)
-      ? result[2].trim().split(/\r?\n/)[0]
-      : result[2].trim();
-
-    memory[trace] = content;
-  }
-
-  if (memory[TRACES.finalAnswer]) {
-    controller.abort();
-    return memory[TRACES.finalAnswer];
-  }
-
-  if (memory[TRACES.action] && memory[TRACES.actionInput]) {
-    const tool = tools[memory[TRACES.action]];
-    if (tool) {
-      try {
-        const observation = await tool.fn(
-          env,
-          evalFn,
-          memory[TRACES.actionInput]
-        );
-        const observationPrompt = `\nObservation: ${observation}\n`;
-        onToken(observationPrompt);
-        const prior = `${output}${observationPrompt}`;
-        return await agent(env, evalFn, tools, prompt, prior, depth++, onToken);
-      } catch (error) {
-        console.error(`Error with ${tool.name}.\n${error}`);
-      }
-    } else {
-      console.error(`Error with ${memory[TRACES.action]}. Could not find tool`);
+  try {
+    const { response, controller } = await chat(
+      env,
+      ReActTemplate(Object.values(tools), prompt, scratchpad),
+      [`\n${TRACES.observation}`]
+    );
+    if (response.body == null) {
+      console.error("No response body");
+      throw new Error("No response body");
     }
+
+    const reader = response.body.getReader();
+
+    let output = `${scratchpad}`;
+
+    for await (const token of tokenize(read(reader))) {
+      output += token;
+      console.debug(token);
+      onToken(token);
+    }
+
+    let memory: { [key: string]: string } = {};
+
+    if (depth === 0) {
+      onToken(`${TRACES.thought} `);
+    }
+
+    let result;
+    while ((result = PARSER_REGEXP.exec(output))) {
+      const trace = result[1];
+      // action and action input are always separated by one newline
+      const content = NO_NEWLINES.includes(trace)
+        ? result[2].trim().split(/\r?\n/)[0]
+        : result[2].trim();
+
+      memory[trace] = content;
+    }
+
+    if (memory[TRACES.finalAnswer]) {
+      controller.abort();
+      return memory[TRACES.finalAnswer];
+    }
+
+    if (memory[TRACES.action] && memory[TRACES.actionInput]) {
+      const tool = tools[memory[TRACES.action]];
+      if (tool) {
+        try {
+          const observation = await tool.fn(
+            env,
+            evalFn,
+            memory[TRACES.actionInput]
+          );
+          const observationPrompt = `\nObservation: ${observation}\n`;
+          onToken(observationPrompt);
+          const prior = `${output}${observationPrompt}`;
+          return await agent(
+            env,
+            evalFn,
+            tools,
+            prompt,
+            prior,
+            depth++,
+            onToken
+          );
+        } catch (error) {
+          console.error(`Error with ${tool.name}.\n${error}`);
+        }
+      } else {
+        console.error(
+          `Error with ${memory[TRACES.action]}. Could not find tool`
+        );
+      }
+    }
+  } catch (e) {
+    console.error("[agent error]", e);
+    throw e;
   }
 }
-
-// async function run() {
-//   const answer = await agent(TOOLS, process.argv[2], '', 0, (token) =>
-//     process.stdout.write(token.toString())
-//   );
-//   console.log(`\n\nFinal Answer: ${answer}`);
-//   return;
-// }
-
-// run().then(() => process.exit(0));
