@@ -24,9 +24,8 @@ export interface Env {
   OPENAI_API_KEY: string;
 }
 
-import { nanoid } from "nanoid";
 import { TOOLS, agent } from "./agent";
-import { Message, RemoveEvalResult } from "./types";
+import { RemoteEvalResult, Message } from "./types";
 
 export default {
   async fetch(
@@ -39,12 +38,16 @@ export default {
 
     // executes a remote eval in the clients browser
     // and returns the result to the worker
-    async function remoteEvalFn(code: string): Promise<RemoveEvalResult> {
-      console.debug("[exec]", code);
-      const id = nanoid();
+    async function remoteEvalFn(
+      id: string,
+      js: string
+    ): Promise<RemoteEvalResult> {
+      console.debug("[exec]", js);
       let resolved = false;
       return new Promise((resolve, reject) => {
-        worker.send(JSON.stringify({ type: "eval", code, id }));
+        worker.send(
+          JSON.stringify(Message.parse({ type: "eval", code: js, id }))
+        );
         worker.addEventListener("message", (event) => {
           setTimeout(() => {
             if (!resolved) {
@@ -52,16 +55,15 @@ export default {
             }
           }, 10000);
           if (typeof event.data === "string") {
-            const response = JSON.parse(event.data);
-            if (response.type === "eval" && response.id === id) {
+            const response = Message.parse(JSON.parse(event.data));
+            if (response.type === "evalSuccess" && response.id === id) {
               resolved = true;
-              if (response.status === "error") {
-                reject(response.error);
-              } else {
-                console.log("[exec result]", response.result);
-                resolve(response);
-              }
+              console.log("[exec result]", response.result);
               resolve(response);
+            } else {
+              resolved = true;
+              console.error("[exec error]", response);
+              reject(response);
             }
           }
         });
@@ -71,22 +73,49 @@ export default {
     function handleMessage(event: MessageEvent) {
       console.debug("[message]", event.data);
       if (typeof event.data === "string") {
-        const message: Message = JSON.parse(event.data);
-        if (message.type === "question") {
-          console.debug("[question]", message.question);
-          agent(env, remoteEvalFn, TOOLS, message.question, "", 0, (token) => {
-            console.debug("[token]", token);
-            worker.send(JSON.stringify({ type: "token", token }));
-          })
-            .then((answer) => {
-              console.debug("[answer]", answer);
-              worker.send(JSON.stringify({ type: "answer", answer }));
-            })
-            .catch(console.error);
-        } else if (message.type === "eval") {
-          // no-op
-        } else {
-          console.error("[error] unsupported message type", message);
+        const message = Message.parse(JSON.parse(event.data));
+        switch (message.type) {
+          case "question":
+            console.debug("[question]", message.question);
+            agent(
+              env,
+              message.id,
+              remoteEvalFn,
+              TOOLS,
+              message.question,
+              "Thought: ",
+              0,
+              (id, token) => {
+                // console.debug("[token]", token);
+                worker.send(
+                  JSON.stringify(
+                    Message.parse({ id: message.id, type: "token", token })
+                  )
+                );
+              }
+            )
+              .then((answer) => {
+                console.debug("[answer]", answer);
+                worker.send(
+                  JSON.stringify(
+                    Message.parse({
+                      id: message.id,
+                      type: "answer",
+                      answer: answer ?? "Bzzt. Something went wrong.",
+                    })
+                  )
+                );
+              })
+              .catch(console.error);
+            break;
+          case "evalSuccess":
+            // no-op
+            break;
+          case "evalError":
+            // no-op
+            break;
+          default:
+            console.error("[unknown message type]", message);
         }
       }
     }

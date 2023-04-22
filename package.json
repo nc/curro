@@ -5,14 +5,11 @@
   "workspaces": {
     "packages": [
       "www",
-      "examples/*",
-      "packages/@curro/*",
-      "packages/@collabkit/test-utils",
-      "www"
+      "api"
     ]
   },
   "scripts": {
-    "dev": "pnpm --recursive --parallel run dev",
+    "dev": "turbo run dev --parallel",
     "build": "pnpm --filter '@collabkit/react' run build && pnpm --parallel --filter '!@collabkit/react' --filter '!functions' run build",
     "server": "yarn workspace server dev",
     "typecheck": "tsc -b examples/demo www",

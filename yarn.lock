@@ -3672,6 +3672,11 @@ tsx@^3.12.1:
   optionalDependencies:
     fsevents "~2.3.2"
 
+turborepo@^0.0.1:
+  version "0.0.1"
+  resolved "https://registry.yarnpkg.com/turborepo/-/turborepo-0.0.1.tgz#0f86976a6246108387777542ba7a585b1dcf4f94"
+  integrity sha512-x+4Q9iy252nr6zuU/TvQIF4na8OVLe2pBTwTJKA/aTPzdR4W8q0uhEj/U69G09IznNDjMg8jXG2nm9gan4KQ1g==
+
 type-check@^0.4.0, type-check@~0.4.0:
   version "0.4.0"
   resolved "https://registry.npmjs.org/type-check/-/type-check-0.4.0.tgz"
@@ -3971,3 +3976,8 @@ youch@^2.2.2:
     cookie "^0.4.1"
     mustache "^4.2.0"
     stack-trace "0.0.10"
+
+zod@^3.21.4:
+  version "3.21.4"
+  resolved "https://registry.yarnpkg.com/zod/-/zod-3.21.4.tgz#10882231d992519f0a10b5dd58a38c9dabbb64db"
+  integrity sha512-m46AKbrzKVzOzs/DZgVnG5H55N1sv1M8qZU3A8RIKbs3mrACDNeIOeilDymVb2HdmP8uwshOCF4uJ8uM9rCqJw==

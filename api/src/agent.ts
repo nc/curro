@@ -1,4 +1,4 @@
-import { RemoteEvalReqest, Tool, Tools } from "./types";
+import { RemoteEvalRequest, Tool, Tools } from "./types";
 
 const TRACES = Object.freeze({
   thought: "Thought:",
@@ -59,15 +59,20 @@ Final Answer: the final answer to the original input question.
 
 Begin!
 Question: ${prompt}
-Thought: ${scratchpad}`;
+${scratchpad}
+`;
 };
 
 export const TOOLS = {
   Clock: {
     name: "Clock",
-    description: "Get todays date",
-    fn: async (env: Env, evalFn: RemoteEvalReqest, input: string) =>
-      new Date().toString(),
+    description: "Get todays date.",
+    fn: async (
+      env: Env,
+      id: string,
+      evalFn: RemoteEvalRequest,
+      input: string
+    ) => new Date().toString(),
   },
   // Search: {
   //   name: "Search",
@@ -83,11 +88,17 @@ export const TOOLS = {
   // },
   Compute: {
     name: "Compute",
-    description: "Compute things by writing and evaluating JS code",
-    fn: async (env: Env, evalFn: RemoteEvalReqest, input: string) => {
+    description: "Can compute things bsaed on a plain english input.",
+    fn: async (
+      env: Env,
+      id: string,
+      remoteEvalFn: RemoteEvalRequest,
+      input: string
+    ) => {
       const { response } = await prompt(
         env,
-        `You are a helpful assistant that writes JS code, do not output anything other than the code itself. No explanation. Just the code so it can be executed instantly. Write a JS function to return: ${input}\n And call the function at the end of the code.`
+        `You are a helpful assistant that writes JS code, do not output anything other than the code itself. No explanation. Just the code so it can be executed instantly. Write a JS function to return: ${input}\n And call the function at the end of the code.
+        `
       );
       const js = ((await response.json()) as unknown as any).choices[0]?.message
         ?.content;
@@ -97,8 +108,8 @@ export const TOOLS = {
         return "I don't know.";
       }
 
-      const evalResponse = await evalFn(js);
-      if (evalResponse.status === "error") {
+      const evalResponse = await remoteEvalFn(id, js);
+      if (evalResponse.type === "evalError") {
         console.error("failed to eval", evalResponse.error);
         return "I don't know.";
       }
@@ -148,7 +159,8 @@ async function prompt(env: Env, prompt: string) {
       Authorization: "Bearer " + env.OPENAI_API_KEY,
     },
     body: JSON.stringify({
-      model: "gpt-3.5-turbo",
+      model: "gpt-4",
+      temperature: 0,
       messages: [{ role: "system", content: prompt }],
     }),
   });
@@ -156,7 +168,6 @@ async function prompt(env: Env, prompt: string) {
 }
 
 async function chat(env: Env, prompt: string, stop?: string | string[]) {
-  console.debug("[chatting]", prompt, stop);
   const controller = new AbortController();
   const response = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
@@ -166,6 +177,7 @@ async function chat(env: Env, prompt: string, stop?: string | string[]) {
     },
     body: JSON.stringify({
       model: "gpt-3.5-turbo",
+      temperature: 0,
       messages: [{ role: "system", content: prompt }],
       stream: true,
       ...(stop ? { stop } : {}),
@@ -202,9 +214,6 @@ async function* tokenize(
       yield parse(payload);
     }
   }
-  // if (data) {
-  //   yield parse(data);
-  // }
 }
 
 async function* read(reader: ReadableStreamDefaultReader) {
@@ -226,24 +235,26 @@ async function* read(reader: ReadableStreamDefaultReader) {
 
 export async function agent(
   env: Env,
-  evalFn: RemoteEvalReqest,
+  id: string,
+  remoteEvalFn: RemoteEvalRequest,
   tools: Tools,
   prompt: string,
   scratchpad: string,
   depth: number,
-  onToken: (token: string) => void = () => {}
+  onToken: (id: string, token: string) => void = () => {}
 ): Promise<string | void> {
+  console.log("[agent]", id, depth, prompt, "\n", scratchpad, "\n\n");
+
   if (depth > 5) {
     console.error("Depth limit reached, aborting.");
     throw new Error("Depth limit reached, aborting.");
   }
 
   try {
-    const { response, controller } = await chat(
-      env,
-      ReActTemplate(Object.values(tools), prompt, scratchpad),
-      [`\n${TRACES.observation}`]
-    );
+    const template = ReActTemplate(Object.values(tools), prompt, scratchpad);
+    const { response, controller } = await chat(env, template, [
+      `\n${TRACES.observation}`,
+    ]);
     if (response.body == null) {
       console.error("No response body");
       throw new Error("No response body");
@@ -254,16 +265,12 @@ export async function agent(
     let output = `${scratchpad}`;
 
     for await (const token of tokenize(read(reader))) {
+      if (!token) continue;
       output += token;
-      console.debug(token);
-      onToken(token);
+      onToken(id, token);
     }
 
     let memory: { [key: string]: string } = {};
-
-    if (depth === 0) {
-      onToken(`${TRACES.thought} `);
-    }
 
     let result;
     while ((result = PARSER_REGEXP.exec(output))) {
@@ -277,25 +284,31 @@ export async function agent(
     }
 
     if (memory[TRACES.finalAnswer]) {
+      console.log("[finalAnswer]", memory[TRACES.finalAnswer]);
       controller.abort();
       return memory[TRACES.finalAnswer];
-    }
-
-    if (memory[TRACES.action] && memory[TRACES.actionInput]) {
+    } else if (memory[TRACES.action] && memory[TRACES.actionInput]) {
+      console.log(
+        "[action+input]",
+        memory[TRACES.action],
+        memory[TRACES.actionInput]
+      );
       const tool = tools[memory[TRACES.action]];
       if (tool) {
         try {
           const observation = await tool.fn(
             env,
-            evalFn,
+            id,
+            remoteEvalFn,
             memory[TRACES.actionInput]
           );
           const observationPrompt = `\nObservation: ${observation}\n`;
-          onToken(observationPrompt);
+          onToken(id, observationPrompt);
           const prior = `${output}${observationPrompt}`;
           return await agent(
             env,
-            evalFn,
+            id,
+            remoteEvalFn,
             tools,
             prompt,
             prior,
@@ -310,6 +323,10 @@ export async function agent(
           `Error with ${memory[TRACES.action]}. Could not find tool`
         );
       }
+    } else {
+      console.error(
+        `Error with ${output}. Could not find action and action input`
+      );
     }
   } catch (e) {
     console.error("[agent error]", e);
