@@ -8,3 +8,13 @@ body {
   font-smooth: antialiased;
   box-sizing: border-box;
 }
+
+.icon-spin {
+  animation: icon-spin 1s steps(8, start) infinite;
+}
+
+@keyframes icon-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

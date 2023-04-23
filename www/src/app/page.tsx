@@ -2,7 +2,7 @@
 import React, { useCallback } from 'react';
 import { useAgent } from './useAgent';
 import { useSnapshot } from 'valtio';
-import { SpinnerGap } from '@phosphor-icons/react';
+import { Spinner, SpinnerGap } from '@phosphor-icons/react';
 
 const MainStyle: React.CSSProperties = {
   fontFamily: 'Inter, sans-serif',
@@ -70,11 +70,11 @@ const InputStyle: React.CSSProperties = {
 };
 
 const CursorStyle: React.CSSProperties = {
-  width: '1ch',
+  width: '2px',
   height: '1em',
   position: 'relative',
   top: '0.25em',
-  background: 'white',
+  background: 'rgba(255,255,255,0.9)',
   display: 'inline-block',
 };
 
@@ -119,7 +119,7 @@ export default function Home() {
               <div style={MessageStyle}>{tasks[id].question}</div>
               <div style={OutputStyle}>
                 <div style={AgentProcessingStyle}>
-                  <SpinnerGap size={20} color="#929896" weight="regular" />
+                  <SpinnerGap className="icon-spin" size={20} color="#929896" weight="regular" />
                   Processing...
                 </div>
                 <span style={AgentOutputStyle}>{tasks[id].output}</span>
