@@ -100,9 +100,19 @@ const FormStyle: React.CSSProperties = {
   maxWidth: '652px',
 };
 
+const ConnectionStyle: React.CSSProperties = {
+  position: 'fixed',
+  top: 24,
+  right: 24,
+  fontSize: 12,
+  textTransform: 'uppercase',
+  letterSpacing: '0.1em',
+  color: 'rgba(255,255,255,0.5)',
+};
+
 export default function Home() {
   const { store, actions } = useAgent();
-  const { tasks } = useSnapshot(store);
+  const { tasks, connectionState } = useSnapshot(store);
 
   const handleSubmit = useCallback(
     async (e: React.FormEvent<HTMLFormElement>) => {
@@ -116,6 +126,7 @@ export default function Home() {
 
   return (
     <main style={MainStyle}>
+      <div style={ConnectionStyle}>{connectionState}</div>
       {tasks &&
         Object.keys(tasks).map((id) => {
           return (

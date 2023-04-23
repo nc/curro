@@ -24,6 +24,7 @@ export function useAgent() {
       tasks: {},
     })
   );
+
   const wsRef = useRef<WebSocket | null>(null);
 
   const ask = useCallback(
@@ -41,7 +42,7 @@ export function useAgent() {
     [storeRef, wsRef]
   );
 
-  useEffect(() => {
+  const connect = useCallback(() => {
     wsRef.current = new WebSocket('ws://localhost:8787');
     const ws = wsRef.current;
     ws.addEventListener('message', (event) => {
@@ -84,13 +85,23 @@ export function useAgent() {
 
     ws.addEventListener('close', () => {
       storeRef.current.connectionState = 'disconnected';
+      setTimeout(() => {
+        connect();
+      }, 1000);
       console.log('[close]');
     });
 
     ws.addEventListener('error', () => {
       storeRef.current.connectionState = 'disconnected';
+      setTimeout(() => {
+        connect();
+      }, 1000);
       console.log('[error]');
     });
+  }, []);
+
+  useEffect(() => {
+    connect();
   }, []);
 
   return { store: storeRef.current, actions: { ask } };
