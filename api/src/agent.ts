@@ -63,6 +63,34 @@ ${scratchpad}
 `;
 };
 
+async function compute(
+  env: Env,
+  id: string,
+  remoteEvalFn: RemoteEvalRequest,
+  input: string
+) {
+  const { response } = await prompt(
+    env,
+    `You are a helpful assistant that writes JS code, do not output anything other than the code itself. No explanation. Just the code so it can be executed instantly. Write a JS function to return: ${input}\n And call the function at the end of the code.
+      `
+  );
+  const js = ((await response.json()) as unknown as any).choices[0]?.message
+    ?.content;
+  js && console.debug(`\nExecuting:\n\n\t${js.split("\n").join("\n\t")}`);
+
+  if (!js) {
+    return "I don't know.";
+  }
+
+  const evalResponse = await remoteEvalFn(id, js);
+  if (evalResponse.type === "evalError") {
+    console.error("failed to eval", evalResponse.error);
+    return "I don't know.";
+  }
+
+  return evalResponse.result;
+}
+
 export const TOOLS = {
   Clock: {
     name: "Clock",
@@ -74,6 +102,7 @@ export const TOOLS = {
       input: string
     ) => new Date().toString(),
   },
+
   // Search: {
   //   name: "Search",
   //   description: "Search the web",
@@ -86,37 +115,19 @@ export const TOOLS = {
   //     return html;
   //   },
   // },
+
+  BrowserCompute: {
+    name: "BrowserCompute",
+    description: "Use this to compute things on a users browser.",
+    fn: compute,
+  },
+
   Compute: {
     name: "Compute",
     description: "Can compute things bsaed on a plain english input.",
-    fn: async (
-      env: Env,
-      id: string,
-      remoteEvalFn: RemoteEvalRequest,
-      input: string
-    ) => {
-      const { response } = await prompt(
-        env,
-        `You are a helpful assistant that writes JS code, do not output anything other than the code itself. No explanation. Just the code so it can be executed instantly. Write a JS function to return: ${input}\n And call the function at the end of the code.
-        `
-      );
-      const js = ((await response.json()) as unknown as any).choices[0]?.message
-        ?.content;
-      js && console.debug(`\nExecuting:\n\n\t${js.split("\n").join("\n\t")}`);
-
-      if (!js) {
-        return "I don't know.";
-      }
-
-      const evalResponse = await remoteEvalFn(id, js);
-      if (evalResponse.type === "evalError") {
-        console.error("failed to eval", evalResponse.error);
-        return "I don't know.";
-      }
-
-      return evalResponse.result;
-    },
+    fn: compute,
   },
+
   // FindAPI: {
   //   name: "FindAPI",
   //   description: "Find the API for a given function",
@@ -133,6 +144,7 @@ export const TOOLS = {
   //     return result ? eval(result) : "I don't know.";
   //   },
   // },
+
   // AskForHelp: {
   //   name: "AskForHelp",
   //   description: "Ask for help from a human",
@@ -146,6 +158,7 @@ export const TOOLS = {
   //     return "I don't know.";
   //   },
   // },
+
   // WaitForConfirmation: {
   //   name: "WaitForConfirmation",
   //   description: "Wait for confirmation from a human for destructive actions",
