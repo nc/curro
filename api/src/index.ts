@@ -87,24 +87,28 @@ export default {
               0,
               (id, token) => {
                 // console.debug("[token]", token);
-                worker.send(
-                  JSON.stringify(
-                    Message.parse({ id: message.id, type: "token", token })
-                  )
-                );
+                if (worker.readyState === WebSocket.READY_STATE_OPEN) {
+                  worker.send(
+                    JSON.stringify(
+                      Message.parse({ id: message.id, type: "token", token })
+                    )
+                  );
+                }
               }
             )
               .then((answer) => {
                 console.debug("[answer]", answer);
-                worker.send(
-                  JSON.stringify(
-                    Message.parse({
-                      id: message.id,
-                      type: "answer",
-                      answer: answer ?? "",
-                    })
-                  )
-                );
+                if (worker.readyState === WebSocket.READY_STATE_OPEN) {
+                  worker.send(
+                    JSON.stringify(
+                      Message.parse({
+                        id: message.id,
+                        type: "answer",
+                        answer: answer ?? "",
+                      })
+                    )
+                  );
+                }
               })
               .catch(console.error);
             break;
