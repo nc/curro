@@ -6,4 +6,5 @@ body {
 
 * {
   font-smooth: antialiased;
+  box-sizing: border-box;
 }

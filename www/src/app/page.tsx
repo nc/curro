@@ -5,11 +5,11 @@ import { useSnapshot } from 'valtio';
 
 const MainStyle: React.CSSProperties = {
   fontFamily: 'Inter, sans-serif',
-  padding: 24,
   display: 'flex',
   flexDirection: 'column',
   flex: 1,
   height: '100vh',
+  paddingTop: '24px',
 };
 
 const MessageStyle: React.CSSProperties = {
@@ -26,7 +26,14 @@ const MessageStyle: React.CSSProperties = {
 const OutputStyle: React.CSSProperties = {
   ...MessageStyle,
   background: 'transparent',
+};
+
+const ProcessingStyle: React.CSSProperties = {
   whiteSpace: 'pre-wrap',
+  fontFamily: 'Menlo, monospace',
+  color: '#929896',
+  fontSize: 12,
+  lineHeight: '20px',
 };
 
 const AnswerStyle: React.CSSProperties = {
@@ -38,35 +45,48 @@ const MessageListStyle: React.CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'flex-start',
-  padding: 0,
+  padding: '0px 24px',
   gap: 12,
   flex: 0,
   marginTop: 12,
 };
 
 const InputStyle: React.CSSProperties = {
+  ...MessageStyle,
   backgroundColor: '#2D302F',
   color: 'rgba(255, 255, 255, 0.9)',
-  fontFamily: 'Inter, sans-serif',
-  fontSize: '15px',
-  lineHeight: '28px',
   border: 'none',
-  padding: '5px 20px',
   marginTop: '12px',
   borderRadius: '8px',
   outline: 'none',
-  width: 'calc(100% - 40px)',
+  width: 'calc(100% - 24px)',
 };
 
 const CursorStyle: React.CSSProperties = {
   width: '1ch',
   height: '1em',
+  position: 'relative',
+  top: '0.25em',
   background: 'white',
   display: 'inline-block',
 };
 
 const HiddenStyle: React.CSSProperties = {
   display: 'none',
+};
+
+const SpacerStyle: React.CSSProperties = {
+  flex: 1,
+};
+
+const FormStyle: React.CSSProperties = {
+  display: 'flex',
+  padding: '10px 20px 20px',
+  borderTop: '1px solid #2D302F',
+  background: '#151817',
+  position: 'sticky',
+  bottom: 0,
+  marginTop: 20,
 };
 
 export default function Home() {
@@ -91,27 +111,28 @@ export default function Home() {
             <div key={id} style={MessageListStyle}>
               <div style={MessageStyle}>{tasks[id].question}</div>
               <div style={OutputStyle}>
-                {tasks[id].output}
+                Processing...
+                <br />
+                <span style={ProcessingStyle}>{tasks[id].output}</span>
                 {tasks[id].done ? null : <div style={CursorStyle} />}
               </div>
               {tasks[id].done ? <div style={AnswerStyle}>{tasks[id].answer}</div> : null}
             </div>
           );
         })}
-      <div>
-        <form onSubmit={handleSubmit}>
-          <input
-            name="query"
-            type="text"
-            placeholder="Ask anything..."
-            style={InputStyle}
-            autoComplete="off"
-          />
-          <button type="submit" style={HiddenStyle}>
-            Submit
-          </button>
-        </form>
-      </div>
+      <div style={SpacerStyle} />
+      <form onSubmit={handleSubmit} style={FormStyle}>
+        <input
+          name="query"
+          type="text"
+          placeholder="Ask anything..."
+          style={InputStyle}
+          autoComplete="off"
+        />
+        <button type="submit" style={HiddenStyle}>
+          Submit
+        </button>
+      </form>
     </main>
   );
 }
