@@ -1,5 +1,5 @@
 'use client';
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import { useAgent } from './useAgent';
 import { useSnapshot } from 'valtio';
 import { Check, SpinnerGap } from '@phosphor-icons/react';
@@ -113,15 +113,15 @@ const ConnectionStyle: React.CSSProperties = {
 export default function Home() {
   const { store, actions } = useAgent();
   const { tasks, connectionState } = useSnapshot(store);
+  const [query, setQuery] = useState('');
 
   const handleSubmit = useCallback(
     async (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
-      const query = e.currentTarget.query.value;
       actions.ask(query);
-      e.currentTarget.value = '';
+      setQuery('');
     },
-    [actions]
+    [actions, query]
   );
 
   return (
@@ -167,6 +167,8 @@ export default function Home() {
           type="text"
           placeholder="Ask anything..."
           style={InputStyle}
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
           autoComplete="off"
         />
         <button type="submit" style={HiddenStyle}>
