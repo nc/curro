@@ -4,6 +4,7 @@ import { proxy } from 'valtio';
 import { Message } from './types';
 
 type Store = {
+  connectionState: 'connecting' | 'connected' | 'disconnected';
   tasks: Record<
     string,
     {
@@ -19,6 +20,7 @@ type Store = {
 export function useAgent() {
   const storeRef = useRef(
     proxy<Store>({
+      connectionState: 'connecting',
       tasks: {},
     })
   );
@@ -55,7 +57,6 @@ export function useAgent() {
           console.log('[token]', message.token);
           break;
         case 'eval':
-          let result;
           try {
             const response = Message.parse({
               id: message.id,
@@ -77,14 +78,17 @@ export function useAgent() {
     });
 
     ws.addEventListener('open', () => {
+      storeRef.current.connectionState = 'connected';
       console.log('[open]');
     });
 
     ws.addEventListener('close', () => {
+      storeRef.current.connectionState = 'disconnected';
       console.log('[close]');
     });
 
     ws.addEventListener('error', () => {
+      storeRef.current.connectionState = 'disconnected';
       console.log('[error]');
     });
   }, []);
