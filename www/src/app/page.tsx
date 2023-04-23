@@ -65,6 +65,10 @@ const CursorStyle: React.CSSProperties = {
   display: 'inline-block',
 };
 
+const HiddenStyle: React.CSSProperties = {
+  display: 'none',
+};
+
 export default function Home() {
   const { store, actions } = useAgent();
   const { tasks } = useSnapshot(store);
@@ -103,7 +107,7 @@ export default function Home() {
             style={InputStyle}
             autoComplete="off"
           />
-          <button type="submit" style={{ display: 'none' }}>
+          <button type="submit" style={HiddenStyle}>
             Submit
           </button>
         </form>
