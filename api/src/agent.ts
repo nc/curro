@@ -118,9 +118,27 @@ export const TOOLS = {
   //   },
   // },
 
+  // work with data using AI
+  // flexible computing environment
+
+  // work with csvs easily
+
+  // sales outreach
+
   // fetch all leads from crunchbase
   // here are the leads from crunchbase
+  // filter them down
+  // send emails
+  // refine and review emails
+  // understand performance
+
   // it needs to know how to 'ref' data
+  // it needs to understand the currently selected thing
+  // it needs to understand the current context
+  // it needs to be able to process things
+  // it should enable others to interact with it
+
+  // network effect, apps working together
 
   BrowserCompute: {
     name: "BrowserCompute",
@@ -151,19 +169,19 @@ export const TOOLS = {
   //   },
   // },
 
-  // AskForHelp: {
-  //   name: "AskForHelp",
-  //   description: "Ask for help from a human",
-  //   fn: async (
-  //     env: Env,
-  //     id: string,
-  //     evalFn: RemoteEvalRequest,
-  //     input: string
-  //   ) => {
-  //     console.log("HELP!!!", input);
-  //     return "I don't know.";
-  //   },
-  // },
+  AskForHelp: {
+    name: "AskForHelp",
+    description: "Ask for help from a human",
+    fn: async (
+      env: Env,
+      id: string,
+      evalFn: RemoteEvalRequest,
+      input: string
+    ) => {
+      console.log("HELP!!!", input);
+      return "I don't know.";
+    },
+  },
 
   // WaitForConfirmation: {
   //   name: "WaitForConfirmation",

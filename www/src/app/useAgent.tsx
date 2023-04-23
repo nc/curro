@@ -13,6 +13,7 @@ type Store = {
       question: string;
       output: string;
       answer: string;
+      done: boolean;
     }
   >;
 };
@@ -33,7 +34,7 @@ export function useAgent() {
         type: 'question',
         question: question,
       });
-      storeRef.current.tasks[id] = { id, question, output: '', answer: '' };
+      storeRef.current.tasks[id] = { id, question, output: '', answer: '', done: false };
       wsRef.current?.send(JSON.stringify(message));
       return id;
     },
@@ -48,6 +49,7 @@ export function useAgent() {
       switch (message.type) {
         case 'answer':
           storeRef.current.tasks[message.id].answer = message.answer;
+          storeRef.current.tasks[message.id].done = true;
           break;
 
         case 'token':
