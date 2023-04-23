@@ -136,7 +136,12 @@ export const TOOLS = {
   // AskForHelp: {
   //   name: "AskForHelp",
   //   description: "Ask for help from a human",
-  //   fn: async (env: Env, evalFn: RemoteEvalReqest, input: string) => {
+  //   fn: async (
+  //     env: Env,
+  //     id: string,
+  //     evalFn: RemoteEvalRequest,
+  //     input: string
+  //   ) => {
   //     console.log("HELP!!!", input);
   //     return "I don't know.";
   //   },

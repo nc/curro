@@ -31,7 +31,7 @@ export default function Home() {
           return (
             <div key={id}>
               <div>{tasks[id].question}</div>
-              <div>{tasks[id].answer}</div>
+              <div>{tasks[id].output}</div>
             </div>
           );
         })}
