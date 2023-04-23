@@ -45,6 +45,8 @@ const ReActTemplate = (tools: Tool[], prompt: string, scratchpad: string) => {
   return `Answer the following questions as best you can. You have access to the following tools: 
 ${tools.map((tool) => `${tool.name}: ${tool.description}`).join("\n")}
 
+Note: You can handle links to data by writing them in markdown syntax like this: [link](https://example.com).
+
 Use the following format:
 Question: the input question you must answer
 Thought: you should always think about what to do
@@ -71,7 +73,7 @@ async function compute(
 ) {
   const { response } = await prompt(
     env,
-    `You are a helpful assistant that writes JS code, do not output anything other than the code itself. No explanation. Just the code so it can be executed instantly. Write a JS function to return: ${input}\n And call the function at the end of the code.
+    `You are a helpful assistant that writes JS code, do not output anything other than the code itself. No explanation. Just the code so it can be executed instantly. Write a JS function to return: ${input}\n And call the function at the end of the code. DO NOT output anything other than the code itself. No explanation. Just the code so it can be executed instantly. DO NOT use console.log.
       `
   );
   const js = ((await response.json()) as unknown as any).choices[0]?.message
@@ -115,6 +117,10 @@ export const TOOLS = {
   //     return html;
   //   },
   // },
+
+  // fetch all leads from crunchbase
+  // here are the leads from crunchbase
+  // it needs to know how to 'ref' data
 
   BrowserCompute: {
     name: "BrowserCompute",
