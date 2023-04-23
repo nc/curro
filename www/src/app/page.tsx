@@ -2,7 +2,7 @@
 import React, { useCallback } from 'react';
 import { useAgent } from './useAgent';
 import { useSnapshot } from 'valtio';
-import { Check, CheckFat, Dot, Spinner, SpinnerGap } from '@phosphor-icons/react';
+import { Check, SpinnerGap } from '@phosphor-icons/react';
 
 const MainStyle: React.CSSProperties = {
   fontFamily: 'Inter, sans-serif',
