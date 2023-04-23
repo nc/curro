@@ -11,6 +11,7 @@ const MainStyle: React.CSSProperties = {
   flex: 1,
   height: '100vh',
   paddingTop: '24px',
+  alignItems: 'center',
 };
 
 const MessageStyle: React.CSSProperties = {
@@ -56,6 +57,8 @@ const MessageListStyle: React.CSSProperties = {
   gap: 12,
   flex: 0,
   marginTop: 12,
+  width: '100%',
+  maxWidth: '652px',
 };
 
 const InputStyle: React.CSSProperties = {
@@ -89,11 +92,13 @@ const SpacerStyle: React.CSSProperties = {
 const FormStyle: React.CSSProperties = {
   display: 'flex',
   padding: '10px 20px 20px',
-  borderTop: '1px solid #2D302F',
+  // borderTop: '1px solid #2D302F',
   background: '#151817',
   position: 'sticky',
   bottom: 0,
   marginTop: 20,
+  width: '100%',
+  maxWidth: '652px',
 };
 
 export default function Home() {
