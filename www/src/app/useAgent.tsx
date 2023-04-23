@@ -1,10 +1,8 @@
 'use client';
 import { useCallback, useEffect, useRef } from 'react';
 import { proxy } from 'valtio';
-import { Message, RemoteEvalResult } from './types';
+import { Message } from './types';
 
-// import { headers } from 'next/dist/client/components/headers';
-// const inter = Inter({ subsets: ['latin'] });
 type Store = {
   tasks: Record<
     string,

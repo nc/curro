@@ -3,20 +3,30 @@ import React, { useCallback } from 'react';
 import { useAgent } from './useAgent';
 import { useSnapshot } from 'valtio';
 
+const MainStyle: React.CSSProperties = {
+  fontFamily: 'Inter, sans-serif',
+  padding: 24,
+  display: 'flex',
+  flexDirection: 'column',
+  flex: 1,
+  height: '100vh',
+};
+
 const MessageStyle: React.CSSProperties = {
   background: '#2D302F',
   border: '1px solid #2D302F',
   borderRadius: '8px',
   padding: '4px 12px',
-  fontSize: 14,
+  fontSize: 15,
   lineHeight: '28px',
-  color: 'white',
+  color: 'rgba(255, 255, 255, 0.9)',
   fontFamily: 'Inter, sans-serif',
 };
 
 const OutputStyle: React.CSSProperties = {
   ...MessageStyle,
   background: 'transparent',
+  whiteSpace: 'pre-wrap',
 };
 
 const AnswerStyle: React.CSSProperties = {
@@ -30,18 +40,21 @@ const MessageListStyle: React.CSSProperties = {
   alignItems: 'flex-start',
   padding: 0,
   gap: 12,
+  flex: 0,
+  marginTop: 12,
 };
 
 const InputStyle: React.CSSProperties = {
-  background: '#2D302F',
-  color: 'white',
+  backgroundColor: '#2D302F',
+  color: 'rgba(255, 255, 255, 0.9)',
   fontFamily: 'Inter, sans-serif',
-  fontSize: '14px',
-  lineHeight: '18px',
+  fontSize: '15px',
+  lineHeight: '28px',
   border: 'none',
-  padding: '12px 20px',
-  marginBottom: '32px',
-  borderRadius: 100,
+  padding: '5px 20px',
+  marginTop: '12px',
+  borderRadius: '8px',
+  outline: 'none',
   width: 'calc(100% - 40px)',
 };
 
@@ -67,15 +80,7 @@ export default function Home() {
   );
 
   return (
-    <main style={{ fontFamily: 'Inter, sans-serif', padding: 24 }}>
-      <div>
-        <form onSubmit={handleSubmit}>
-          <input name="query" type="text" placeholder="Ask anything..." style={InputStyle} />
-          <button type="submit" style={{ display: 'none' }}>
-            Submit
-          </button>
-        </form>
-      </div>
+    <main style={MainStyle}>
       {tasks &&
         Object.keys(tasks).map((id) => {
           return (
@@ -89,6 +94,20 @@ export default function Home() {
             </div>
           );
         })}
+      <div>
+        <form onSubmit={handleSubmit}>
+          <input
+            name="query"
+            type="text"
+            placeholder="Ask anything..."
+            style={InputStyle}
+            autoComplete="off"
+          />
+          <button type="submit" style={{ display: 'none' }}>
+            Submit
+          </button>
+        </form>
+      </div>
     </main>
   );
 }
