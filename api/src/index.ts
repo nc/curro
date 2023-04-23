@@ -101,7 +101,7 @@ export default {
                     Message.parse({
                       id: message.id,
                       type: "answer",
-                      answer: answer ?? "Bzzt. Something went wrong.",
+                      answer: answer ?? "",
                     })
                   )
                 );

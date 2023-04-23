@@ -2,7 +2,7 @@
 import React, { useCallback } from 'react';
 import { useAgent } from './useAgent';
 import { useSnapshot } from 'valtio';
-import { SpinnerGap } from '@phosphor-icons/react';
+import { Check, CheckFat, Dot, Spinner, SpinnerGap } from '@phosphor-icons/react';
 
 const MainStyle: React.CSSProperties = {
   fontFamily: 'Inter, sans-serif',
@@ -66,7 +66,7 @@ const InputStyle: React.CSSProperties = {
   marginTop: '12px',
   borderRadius: '8px',
   outline: 'none',
-  width: 'calc(100% - 24px)',
+  width: '100%',
 };
 
 const CursorStyle: React.CSSProperties = {
@@ -119,13 +119,29 @@ export default function Home() {
               <div style={MessageStyle}>{tasks[id].question}</div>
               <div style={OutputStyle}>
                 <div style={AgentProcessingStyle}>
-                  <SpinnerGap className="icon-spin" size={20} color="#929896" weight="regular" />
-                  Processing...
+                  {tasks[id].done ? (
+                    <>
+                      <Check size={20} color="#929896" weight="regular" />
+                      Processed
+                    </>
+                  ) : (
+                    <>
+                      <SpinnerGap
+                        className="icon-spin"
+                        size={20}
+                        color="#929896"
+                        weight="regular"
+                      />
+                      Processing...
+                    </>
+                  )}
                 </div>
                 <span style={AgentOutputStyle}>{tasks[id].output}</span>
                 {tasks[id].done ? null : <div style={CursorStyle} />}
               </div>
-              {tasks[id].done ? <div style={AnswerStyle}>{tasks[id].answer}</div> : null}
+              {tasks[id].done && tasks[id].answer ? (
+                <div style={AnswerStyle}>{tasks[id].answer}</div>
+              ) : null}
             </div>
           );
         })}
