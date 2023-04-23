@@ -26,6 +26,7 @@ export type Tool = {
   fn: (
     env: Env,
     id: string,
+    onToken: (id: string, token: string) => void,
     evalFn: RemoteEvalRequest,
     input: string
   ) => Promise<string>;

@@ -68,6 +68,7 @@ ${scratchpad}
 async function compute(
   env: Env,
   id: string,
+  onToken: (id: string, token: string) => void,
   remoteEvalFn: RemoteEvalRequest,
   input: string
 ) {
@@ -81,8 +82,11 @@ async function compute(
   js && console.debug(`\nExecuting:\n\n\t${js.split("\n").join("\n\t")}`);
 
   if (!js) {
+    onToken(id, "I don't know.");
     return "I don't know.";
   }
+
+  onToken(id, `\nEval: \n>>>\n${js}\n<<<`);
 
   const evalResponse = await remoteEvalFn(id, js);
   if (evalResponse.type === "evalError") {
@@ -93,13 +97,14 @@ async function compute(
   return evalResponse.result;
 }
 
-export const TOOLS = {
+export const TOOLS: Tools = {
   Clock: {
     name: "Clock",
     description: "Get todays date.",
     fn: async (
       env: Env,
       id: string,
+      onToken: (id: string, token: string) => void,
       evalFn: RemoteEvalRequest,
       input: string
     ) => new Date().toString(),
@@ -175,6 +180,7 @@ export const TOOLS = {
     fn: async (
       env: Env,
       id: string,
+      onToken,
       evalFn: RemoteEvalRequest,
       input: string
     ) => {
@@ -341,6 +347,7 @@ export async function agent(
           const observation = await tool.fn(
             env,
             id,
+            onToken,
             remoteEvalFn,
             memory[TRACES.actionInput]
           );
