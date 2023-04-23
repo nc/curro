@@ -92,7 +92,6 @@ const SpacerStyle: React.CSSProperties = {
 const FormStyle: React.CSSProperties = {
   display: 'flex',
   padding: '10px 20px 20px',
-  // borderTop: '1px solid #2D302F',
   background: '#151817',
   position: 'sticky',
   bottom: 0,
